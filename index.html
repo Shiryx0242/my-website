@@ -3,30 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เว็บไซต์ของฉัน</title>
+    <title>เมนูแนะนำ</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #f8f8f8;
             margin: 0;
             padding: 0;
             text-align: center;
         }
         .container {
-            margin-top: 50px;
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        h1 {
-            color: #333;
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            background: #eee;
+            border-radius: 10px;
+            padding: 10px;
         }
-        p {
-            color: #555;
+        .tab {
+            flex: 1;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .tab.active {
+            background: #ffcc00;
+            border-radius: 5px;
+        }
+        .menu-list {
+            display: none;
+            margin-top: 15px;
+        }
+        .menu-list.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .menu-item {
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .menu-item img {
+            width: 100%;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>ยินดีต้อนรับสู่เว็บไซต์ของฉัน!</h1>
-        <p>นี่คือลิงก์ที่คุณจะไปได้เมื่อสแกน QR Code</p>
+        <h2>เมนูแนะนำ</h2>
+        <div class="tabs">
+            <div class="tab active" onclick="showMenu('drinks')">เครื่องดื่ม</div>
+            <div class="tab" onclick="showMenu('foods')">อาหาร</div>
+        </div>
+        
+        <div id="drinks" class="menu-list active">
+            <div class="menu-item">
+                <img src="drink1.png" alt="พระอาทิตย์ยิ้มแฉ่ง">
+                <p>พระอาทิตย์ยิ้มแฉ่ง - 65฿</p>
+            </div>
+            <div class="menu-item">
+                <img src="drink2.png" alt="เสือร้องไห้">
+                <p>เสือร้องไห้ - 70฿</p>
+            </div>
+            <div class="menu-item">
+                <img src="drink3.png" alt="พิ้งแพนเตอร์">
+                <p>พิ้งแพนเตอร์ - 65฿</p>
+            </div>
+            <div class="menu-item">
+                <img src="drink4.png" alt="มัลดีฟ มันส์ชิป">
+                <p>มัลดีฟ มันส์ชิป - 69฿</p>
+            </div>
+        </div>
+
+        <div id="foods" class="menu-list">
+            <div class="menu-item">
+                <img src="food1.jpg" alt="เบอร์เกอร์โฮมเมด">
+                <p>เบอร์เกอร์โฮมเมด - 89฿</p>
+            </div>
+            <div class="menu-item">
+                <img src="food2.jpg" alt="ขนมปังอบกรอบ">
+                <p>ขนมปังอบกรอบ - 55฿</p>
+            </div>
+        </div>
     </div>
+
+    <script>
+        function showMenu(menuType) {
+            document.querySelectorAll('.menu-list').forEach(menu => menu.classList.remove('active'));
+            document.getElementById(menuType).classList.add('active');
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showMenu('${menuType}')"]`).classList.add('active');
+        }
+    </script>
 </body>
 </html>
