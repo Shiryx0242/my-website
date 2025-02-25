@@ -32,6 +32,7 @@
             padding: 10px;
             cursor: pointer;
             font-weight: bold;
+            text-align: center;
         }
         .tab.active {
             background: #ffcc00;
@@ -44,7 +45,7 @@
         .menu-list.active {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 15px;
         }
         .menu-item {
             background: #fff;
@@ -56,54 +57,341 @@
             width: 100%;
             border-radius: 10px;
         }
+        .menu-item button {
+            background: #ffcc00;
+            color: black;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+       
+     /* ปุ่มตะกร้า */
+     .cart-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #ffcc00;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        /* Sidebar ตะกร้า */
+        .cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: -300px; /* ซ่อนตะกร้า */
+    width: 250px;
+    height: 100%;
+    background: white;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    transition: right 0.3s ease-in-out;
+}
+
+        .cart-sidebar.active {
+    right: 0; /* แสดงตะกร้า */
+}
+
+        .cart-sidebar h2 {
+            text-align: center;
+        }
+        .cart-sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .cart-sidebar button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .top-background {
+    width: 100%;
+    height: 1050px; /* ตั้งความสูงเป็น 852px */
+    background-image: url('file:///C:/Users/sw994/Documents/qr-code/chongnual.jpg'); /* ใส่เส้นทางของรูปภาพที่คุณต้องการ */
+    background-size: cover; /* ให้รูปภาพครอบคลุมพื้นที่ทั้งหมด */
+    background-position: center; /* จัดตำแหน่งของรูปภาพให้ตรงกลาง */
+    position: absolute; /* วางไว้บนสุดของหน้า */
+    z-index: -1; /* ทำให้อยู่ด้านหลังของเนื้อหา */
+    top: 0;
+    left: 0;
+    border-bottom-left-radius: 50px; /* เพิ่มความโค้งตรงล่าง */
+    border-bottom-right-radius: 50px; /* เพิ่มความโค้งตรงล่าง */
+        }
     </style>
 </head>
 <body>
+    <!-- พื้นหลังส่วนบน -->
+    <div class="top-background"></div> 
+    <!-- ปุ่มตะกร้า -->
+        <button class="cart-button" onclick="toggleCart()">
+            🛒 ตะกร้า (<span id="cart-count">0</span>)
+        </button>
+
+<!-- Sidebar ตะกร้า -->
+        <div id="cart-sidebar" class="cart-sidebar">
+    <h2>🛍️ ตะกร้าของคุณ</h2>
+    <ul id="cart-items">
+        <li>ยังไม่มีสินค้า</li>
+    </ul>
+    <p id="cart-total">รวม: 0฿</p>
+    <button onclick="closeCart()">ปิด</button>
+    <button onclick="processPayment()">ชำระเงิน</button>
+    <p id="payment-success" style="color: green; display: none;">เสร็จสิ้น ✅</p>
+    </div>
+
+<script>
+    let cart = []; // เก็บสินค้าที่เพิ่มในตะกร้า
+    
+    function toggleCart() {
+        let cartSidebar = document.getElementById("cart-sidebar");
+        cartSidebar.classList.toggle("active");
+    }
+
+    function closeCart() {
+        let cartSidebar = document.getElementById("cart-sidebar");
+        cartSidebar.classList.remove("active");
+    }
+
+    function addToCart(itemName, price) {
+        // เพิ่มสินค้าใหม่ลงในตะกร้า
+        cart.push({ name: itemName, price: price });
+        
+        // อัปเดตรายการสินค้าในตะกร้า
+        updateCartSummary();
+
+        // แสดงข้อความแจ้งเตือน
+        alert(`เพิ่ม "${itemName}" ลงในตะกร้าสำเร็จ! ราคา: ${price}฿`);
+    }
+
+    function updateCartSummary() {
+        let cartItems = document.getElementById("cart-items");
+        let cartCount = document.getElementById("cart-count");
+        let cartTotal = document.getElementById("cart-total");
+
+        // ล้างรายการเก่าในตะกร้า
+        cartItems.innerHTML = "";
+
+        // เพิ่มสินค้าจาก `cart` ลงในรายการ
+        cart.forEach((item, index) => {
+            let listItem = document.createElement("li");
+            listItem.innerHTML = `${item.name} - ${item.price}฿ 
+                <button onclick="removeFromCart(${index})">❌ ลบ</button>`;
+            cartItems.appendChild(listItem);
+        });
+
+        // อัปเดตจำนวนสินค้าทั้งหมดในตะกร้า
+        cartCount.textContent = cart.length;
+
+        // อัปเดตราคารวมทั้งหมด
+        let totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+        cartTotal.textContent = `รวม: ${totalPrice}฿`;
+
+        // ถ้าไม่มีสินค้าให้แสดงข้อความ "ยังไม่มีสินค้า"
+        if (cart.length === 0) {
+            cartItems.innerHTML = "<li>ยังไม่มีสินค้า</li>";
+        }
+    }
+
+    function removeFromCart(index) {
+        // ลบสินค้าจากตะกร้าตาม index
+        cart.splice(index, 1);
+
+        // อัปเดตรายการสินค้าในตะกร้า
+        updateCartSummary();
+    }
+    function processPayment() {
+        // ตรวจสอบว่ามีสินค้าหรือไม่
+        if (cart.length === 0) {
+            alert("ตะกร้าว่าง! กรุณาเพิ่มสินค้าเพื่อชำระเงิน");
+            return;
+        }
+
+        // แสดงข้อความ "เสร็จสิ้น ✅"
+        const paymentSuccess = document.getElementById("payment-success");
+        paymentSuccess.style.display = "block";
+
+        // ล้างรายการสินค้าในตะกร้า
+        cart = [];
+        updateCartSummary();
+
+        // ซ่อนข้อความ "เสร็จสิ้น ✅" หลัง 3 วินาที
+        setTimeout(() => {
+            paymentSuccess.style.display = "none";
+        }, 3000);
+    }
+</script>
+
+</script>
+
     <div class="container">
-        <h2>เมนูแนะนำ</h2>
+        <h2>ชงนวล'Cafe</h2>
         <div class="tabs">
-            <div class="tab active" onclick="showMenu('drinks')">เครื่องดื่ม</div>
+            <div class="tab active" onclick="showMenu('recommend')">เมนูแนะนำ</div>
+            <div class="tab" onclick="showMenu('drinks')">เครื่องดื่ม</div>
             <div class="tab" onclick="showMenu('foods')">อาหาร</div>
         </div>
-        
-        <div id="drinks" class="menu-list active">
+<!-- เมนูแนะนำ -->
+        <div id="recommend" class="menu-list active">
             <div class="menu-item">
                 <img src="drink1.png" alt="พระอาทิตย์ยิ้มแฉ่ง">
+                <button onclick="addToCart('พระอาทิตย์ยิ้มแฉ่ง', 65)">เพิ่มลงตะกร้า</button>
                 <p>พระอาทิตย์ยิ้มแฉ่ง - 65฿</p>
             </div>
+            
             <div class="menu-item">
                 <img src="drink2.png" alt="เสือร้องไห้">
+                <button onclick="addToCart('เสือร้องไห้', 70)">เพิ่มลงตะกร้า</button>
                 <p>เสือร้องไห้ - 70฿</p>
             </div>
+
             <div class="menu-item">
                 <img src="drink3.png" alt="พิ้งแพนเตอร์">
+                <button onclick="addToCart('พิ้งแพนเตอร์', 65)">เพิ่มลงตะกร้า</button>
                 <p>พิ้งแพนเตอร์ - 65฿</p>
             </div>
+
             <div class="menu-item">
                 <img src="drink4.png" alt="มัลดีฟ มันส์ชิป">
+                <button onclick="addToCart('มัลดีฟ มันส์ชิป', 69)">เพิ่มลงตะกร้า</button>
+                <p>มัลดีฟ มันส์ชิป - 69฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="drink5.png" alt="ชาเขียวคว่ำเช้า ชามขาวคว่ำค่ำ">
+                <button onclick="addToCart('ชาเขียวคว่ำเช้า ชามขาวคว่ำค่ำ', 60)">เพิ่มลงตะกร้า</button>
+                <p>ชาเขียวคว่ำเช้า ชามขาวคว่ำค่ำ - 69฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="drink4.png" alt="มัลดีฟ มันส์ชิป">
+                <button onclick="addToCart('มัลดีฟ มันส์ชิป', 69)">เพิ่มลงตะกร้า</button>
+                <p>มัลดีฟ มันส์ชิป - 69฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="drink4.png" alt="มัลดีฟ มันส์ชิป">
+                <button onclick="addToCart('มัลดีฟ มันส์ชิป', 69)">เพิ่มลงตะกร้า</button>
+                <p>มัลดีฟ มันส์ชิป - 69฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="drink4.png" alt="มัลดีฟ มันส์ชิป">
+                <button onclick="addToCart('มัลดีฟ มันส์ชิป', 69)">เพิ่มลงตะกร้า</button>
                 <p>มัลดีฟ มันส์ชิป - 69฿</p>
             </div>
         </div>
+ <!-- เมนูเครื่องดื่ม -->
+        <div id="drinks" class="menu-list">
+            <div class="menu-item">
+                <img src="ice1.png" alt="อเมริกาโน่">
+                <button onclick="addToCart('อเมริกาโน่', 50)">เพิ่มลงตะกร้า</button>
+                <p>อเมริกาโน่ - 50฿</p>
+            </div>
 
+            <div class="menu-item">
+                <img src="ice2.png" alt="เอสเปรสโซ่">
+                <button onclick="addToCart('เอสเปรสโซ่', 50)">เพิ่มลงตะกร้า</button>
+                <p>เอสเปรสโซ่ - 50฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="ice3.png" alt="มอคค่า">
+                <button onclick="addToCart('มอคค่า', 50)">เพิ่มลงตะกร้า</button>
+                <p>มอคค่า - 50฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="ice4.png" alt="ลาเต้">
+                <button onclick="addToCart('ลาเต้', 50)">เพิ่มลงตะกร้า</button>
+                <p>ลาเต้ - 50฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="ice5.png" alt="คาปูชิโน่">
+                <button onclick="addToCart('คาปูชิโน่', 50)">เพิ่มลงตะกร้า</button>
+                <p>คาปูชิโน่ - 50฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="ice6.png" alt="คาราเมล แมคเคียโต้">
+                <button onclick="addToCart('คาราเมล แมคเคียโต้', 50)">เพิ่มลงตะกร้า</button>
+                <p>คาราเมล แมคเคียโต้ - 50฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="ice7.png" alt="ชาไทย">
+                <button onclick="addToCart('ชาไทย', 50)">เพิ่มลงตะกร้า</button>
+                <p>ชาไทย - 50฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="ice8.png" alt="ชาเขียว">
+                <button onclick="addToCart('ชาเขียว', 50)">เพิ่มลงตะกร้า</button>
+                <p>ชาเขียว - 50฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="ice9.png" alt="โกโก้">
+                <button onclick="addToCart('โกโก้', 50)">เพิ่มลงตะกร้า</button>
+                <p>โกโก้ - 50฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="ice10.png" alt="นมสด">
+                <button onclick="addToCart('นมสด', 50)">เพิ่มลงตะกร้า</button>
+                <p>นมสด - 50฿</p>
+            </div>
+        </div>
+ <!-- เมนูอาหาร -->
         <div id="foods" class="menu-list">
             <div class="menu-item">
-                <img src="food1.jpg" alt="เบอร์เกอร์โฮมเมด">
+                <img src="food1.png" alt="เบอร์เกอร์โฮมเมด">
+                <button onclick="addToCart('เบอร์เกอร์โฮมเมด', 69)">เพิ่มลงตะกร้า</button>
                 <p>เบอร์เกอร์โฮมเมด - 89฿</p>
             </div>
+
             <div class="menu-item">
-                <img src="food2.jpg" alt="ขนมปังอบกรอบ">
+                <img src="food2.png" alt="ขนมปังอบกรอบ">
+                <button onclick="addToCart('เบอ', 69)">เพิ่มลงตะกร้า</button>
                 <p>ขนมปังอบกรอบ - 55฿</p>
             </div>
+
+            <div class="menu-item">
+                <img src="food3.png" alt="เกี๊ยวหมูเด้ง">
+                <button onclick="addToCart('เกี๊ยวหมูเด้ง', 69)">เพิ่มลงตะกร้า</button>
+                <p>เกี๊ยวหมูเด้ง - 55฿</p>
+            </div>
+
+            <div class="menu-item">
+                <img src="food2.png" alt="ขนมปังอบกรอบ">
+                <button onclick="addToCart('เบอ', 69)">เพิ่มลงตะกร้า</button>
+                <p>ขนมปังอบกรอบ - 55฿</p>
+            </div>
+
         </div>
     </div>
 
     <script>
         function showMenu(menuType) {
-            document.querySelectorAll('.menu-list').forEach(menu => menu.classList.remove('active'));
-            document.getElementById(menuType).classList.add('active');
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelector(`.tab[onclick="showMenu('${menuType}')"]`).classList.add('active');
-        }
+    // ซ่อนเมนูทั้งหมด
+    document.querySelectorAll('.menu-list').forEach(menu => menu.classList.remove('active'));
+    
+    // แสดงเมนูที่เลือก
+    document.getElementById(menuType).classList.add('active');
+    
+    // เปลี่ยนแท็บที่เลือก
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelector(`.tab[onclick="showMenu('${menuType}')"]`).classList.add('active');
+}
     </script>
 </body>
 </html>
